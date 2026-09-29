@@ -1,0 +1,88 @@
+﻿# Render Blueprint Specification for Lab 7 Microservices & API Gateway
+# Region: oregon (all services in same region for optimal latency)
+services:
+  # --------------------------------------------------------------------------
+  # 1. API GATEWAY (Public Facing Entry Point)
+  # --------------------------------------------------------------------------
+  - type: web
+    name: campusconnect-api-gateway
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: api-gateway
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      # The following service URLs must point to the deployed Render URLs of backend services:
+      # e.g., https://campusconnect-user-service.onrender.com
+      - key: USER_SERVICE_URL
+        sync: false
+      - key: PRODUCT_SERVICE_URL
+        sync: false
+      - key: ORDER_SERVICE_URL
+        sync: false
+
+  # --------------------------------------------------------------------------
+  # 2. USER SERVICE
+  # --------------------------------------------------------------------------
+  - type: web
+    name: campusconnect-user-service
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: user-service
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      # Enter your MongoDB Atlas connection string in the Render Dashboard (Do NOT commit credentials to Git):
+      # e.g., mongodb+srv://<username>:<password>@cluster0.mongodb.net/user_db?retryWrites=true&w=majority
+      - key: MONGO_URI
+        sync: false
+
+  # --------------------------------------------------------------------------
+  # 3. PRODUCT SERVICE
+  # --------------------------------------------------------------------------
+  - type: web
+    name: campusconnect-product-service
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: product-service
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      # Enter your MongoDB Atlas connection string in the Render Dashboard:
+      # e.g., mongodb+srv://<username>:<password>@cluster0.mongodb.net/product_db?retryWrites=true&w=majority
+      - key: MONGO_URI
+        sync: false
+
+  # --------------------------------------------------------------------------
+  # 4. ORDER SERVICE
+  # --------------------------------------------------------------------------
+  - type: web
+    name: campusconnect-order-service
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: order-service
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      # User Service URL for inter-service validation REST calls
+      - key: USER_SERVICE_URL
+        sync: false
+      # Product Service URL for inter-service validation REST calls
+      - key: PRODUCT_SERVICE_URL
+        sync: false
+      # Enter your MongoDB Atlas connection string in the Render Dashboard:
+      # e.g., mongodb+srv://<username>:<password>@cluster0.mongodb.net/order_db?retryWrites=true&w=majority
+      - key: MONGO_URI
+        sync: false

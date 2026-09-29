@@ -1,0 +1,96 @@
+﻿# Lab 7 - API Gateway & Microservices Orchestration
+# Canonical Docker Compose Specification
+services:
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000" # ONLY API Gateway is exposed to the host
+    environment:
+      PORT: 3000
+      USER_SERVICE_URL: http://user-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+      ORDER_SERVICE_URL: http://order-service:3003
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - campus-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    # No host port exposed - accessible only internally via gateway
+    environment:
+      PORT: 3001
+      MONGO_URI: mongodb://mongo-user:27017/user_db
+    depends_on:
+      - mongo-user
+    networks:
+      - campus-network
+
+  mongo-user:
+    image: mongo
+    container_name: mongo-user
+    # No host port exposed - isolated database-per-service for User Service
+    volumes:
+      - user-mongo-data:/data/db
+    networks:
+      - campus-network
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    # No host port exposed - accessible only internally via gateway
+    environment:
+      PORT: 3002
+      MONGO_URI: mongodb://mongo-product:27017/product_db
+    depends_on:
+      - mongo-product
+    networks:
+      - campus-network
+
+  mongo-product:
+    image: mongo
+    container_name: mongo-product
+    # No host port exposed - isolated database-per-service for Product Service
+    volumes:
+      - product-mongo-data:/data/db
+    networks:
+      - campus-network
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    # No host port exposed - accessible only internally via gateway
+    environment:
+      PORT: 3003
+      USER_SERVICE_URL: http://user-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3002
+      MONGO_URI: mongodb://mongo-order:27017/order_db
+    depends_on:
+      - mongo-order
+      - user-service
+      - product-service
+    networks:
+      - campus-network
+
+  mongo-order:
+    image: mongo
+    container_name: mongo-order
+    # No host port exposed - isolated database-per-service for Order Service
+    volumes:
+      - order-mongo-data:/data/db
+    networks:
+      - campus-network
+
+networks:
+  campus-network:
+    name: campus-network
+    driver: bridge
+
+volumes:
+  user-mongo-data:
+  product-mongo-data:
+  order-mongo-data:
